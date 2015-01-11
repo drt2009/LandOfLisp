@@ -68,17 +68,17 @@
 	)
 )
 
-(defun objects-at (loc objs obj-locs)
+(defun objects-at (location objects object-locations)
 	( labels
 		(
-			(at-loc-p(obj)
+			(at-loc-p(object)
 				(eq
-					(cadr (assoc obj obj-locs))
-				loc)
+					(cadr (assoc object object-locactions))
+				location)
 			)
 		)
 		(
-			remove-if-not #'at-loc-p objes
+			remove-if-not #'at-loc-p objects
 		)
 	)
 )
