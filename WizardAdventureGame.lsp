@@ -48,6 +48,8 @@
 	)
 )
 
+(defparameter *players-location* 'living-room)
+
 (defun describe-location (location nodes)
 	(cadr(assoc location nodes))
 )
@@ -73,7 +75,9 @@
 		(
 			(at-loc-p(object)
 				(eq
-					(cadr (assoc object object-locactions))
+					(cadr 
+						(assoc object object-locations)
+					)
 				location)
 			)
 		)
@@ -82,3 +86,50 @@
 		)
 	)
 )
+
+(defun describe-objects (location objects object-locations)
+	(labels
+		(
+			(describe-object (object)
+				`(You see a ,object on the floor)
+			)
+		)
+		(apply #'append 
+			(mapcar 
+				#'describe-object (objects-at location objects object-locations)
+			)
+		)
+	)
+)
+
+(defun look()
+	(append
+		( describe-location *players-location* *nodes*)
+		( describe-paths *players-location* *edges*)
+		( describe-objects *players-location* *objects* *object-locations*)
+	)
+)
+
+(defun walk (direction)
+	(let 
+		(
+			(next
+				(find direction
+					(cdr
+						(assoc *players-location* *edges*)
+					)
+				:key #'cadr)
+			)
+		)
+		(if  next
+			(progn
+				(setf *players-location* 
+					(cdr next)
+				)
+			(look)
+			)
+		'(You cannot go that way)
+		)
+	)
+)
+
