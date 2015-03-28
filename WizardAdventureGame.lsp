@@ -1,7 +1,7 @@
 (defparameter *nodes* 
 	'(
 		(
-			living-room (You are in the living-room.  A Wizard is snoring loudly on the couch.)
+			living-room (You are in the living-room.  A W izard is snoring loudly on the couch.)
 		)
 		(
 			garden (You are in a beautiful garden.  There is a well in front of you.)
@@ -17,7 +17,7 @@
 		(
 			living-room 
 				( garden west door)
-				(attic upsairs ladder)
+				(attic upstairs ladder)
 		)
 		(
 			garden
@@ -124,7 +124,7 @@
 		(if  next
 			(progn
 				(setf *players-location* 
-					(cdr next)
+					(car next)
 				)
 			(look)
 			)
@@ -133,3 +133,36 @@
 	)
 )
 
+(defun inventory()
+	(objects-at 'body *objects*  *object-locations*)
+)
+
+(defun pickup_object(object)
+	(cond 
+		(
+			(member object
+				(objects-at *players-location* *objects* *object-locations*)
+			)
+			(push (list object 'body) *object-locations*)
+			`(you are now carrrying the ,object)
+		)
+		(t
+			'(you cannot get that.)
+		)
+	)
+)
+
+(defun drop_object(object)
+	(cond 
+		(
+			(member object
+				(inventory)
+			)
+			(push (list object *players-location*) *object-locations*)
+			`(you have dropped the ,object)
+		)
+		(t
+			'(you cannot drop that.)
+		)
+	)
+)
