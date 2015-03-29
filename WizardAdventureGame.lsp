@@ -1,7 +1,8 @@
+;;;Global Variables 
 (defparameter *nodes* 
 	'(
 		(
-			living-room (You are in the living-room.  A W izard is snoring loudly on the couch.)
+			living-room (You are in the living-room.  A Wizard is snoring loudly on the couch.)
 		)
 		(
 			garden (You are in a beautiful garden.  There is a well in front of you.)
@@ -50,6 +51,7 @@
 
 (defparameter *players-location* 'living-room)
 
+;;;Game Logic
 (defun describe-location (location nodes)
 	(cadr(assoc location nodes))
 )
@@ -165,4 +167,141 @@
 			'(you cannot drop that.)
 		)
 	)
+)
+
+;;;Game REPL
+
+;;Variables just for the REPL
+(defparameter *allowed-commands* 
+	'(look walk pickup_object drop_object inventory)
+)
+
+;;Methods
+(defun wizardAdventureGame()
+	(let
+		(
+			(cmd
+				(game-read)
+			)
+		)
+		(unless
+			(eq
+				(car cmd)
+				'quit
+			)
+			(game-print
+				(game-eval cmd)
+			)
+			(wizardAdventureGame)
+		)
+	)
+)
+
+(defun game-read()
+	(let
+		(
+			(cmd 
+				(read-from-string
+					(concatenate 
+						'string 
+						"(" 
+						(read-line) 
+						")" 
+					)
+				)
+			)
+		)
+		(flet
+			(
+				(quote-it
+					(x)
+					(list 'quote x)
+				)
+			)
+			(cons
+				(car cmd)
+				(mapcar #'quote-it 
+					(cdr cmd)
+				)
+			)
+		)
+	)
+)
+
+(defun game-eval(sexp)
+	(if
+		(member
+			(car sexp)
+			*allowed-commands*
+		)
+		(eval sexp)
+		'(I do not know that command)
+	)
+)
+
+(defun tweak-text (first caps lit)
+	(when first
+		(let
+			(
+				(item
+					(car first)
+				)
+				(rest
+					(cdr first)
+				)
+			)
+			(cond
+				(
+					(eql item #\space)
+					(cons item
+						(tweak-text rest caps lit)
+					)
+				)
+				(
+					(member item 
+						'(#\! #\? #\.)
+					)
+					(cons item 
+						(tweak-text rest t lit)
+					)
+				)
+				(
+					(eql item #\")
+					(tweak-text rest caps (not lit))
+				)
+				(lit
+					(cons item
+						(tweak-text rest nil lit)
+					)
+				)
+				(caps
+					(cons
+						(char-upcase item)
+						(tweak-text rest nil lit)
+					)
+				)
+				(t
+					(cons
+						(char-downcase item)
+						(tweak-text rest nil nil)
+					)
+				)
+			)
+		)
+	)
+)
+
+(defun game-print(first)
+	(princ
+		(coerce
+			(tweak-text
+				(coerce
+					(string-trim "() "
+						(prin1-to-string first)
+					)
+				'list)
+			t nil)
+		'string)
+	)
+	(fresh-line)
 )
